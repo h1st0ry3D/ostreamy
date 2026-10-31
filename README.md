@@ -12,7 +12,7 @@ bar icon (two frames) -> panel
   ------------------------------
   [ Start ] [ Stop ]
   Resolution
-  [ 1280x800 · Deck native ] [ 1920x1200 · 16:10 desktop ]
+  [ 1280x800 ] [ 1920x1200 ]
   Frame rate
   [ 30 ] [ 40 ] [ 45 ] [ 60 ] [ 80 ] [ 90 ]
 ```
