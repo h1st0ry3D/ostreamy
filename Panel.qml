@@ -25,6 +25,20 @@ Panel {
     implicitWidth: button.implicitWidth
     implicitHeight: button.implicitHeight
 
+    // A bar exists per monitor, so this file is instantiated once per screen,
+    // including the off-screen STREAM output. Only the physical screen may own the
+    // IPC target, otherwise `omarchy-shell shell toggle` reaches the invisible copy
+    // and the panel opens where nobody can see it.
+    // QsWindow is the attached property that knows which surface this copy lives
+    // on; the bar object itself is shared and carries no screen.
+    readonly property string screenName: {
+        var win = root.QsWindow ? root.QsWindow.window : null
+        return win && win.screen ? String(win.screen.name || "") : ""
+    }
+    readonly property string streamOutput: root.loadedReady && root.loaded && root.loaded.output
+        ? String(root.loaded.output) : "STREAM"
+    manageIpc: root.screenName === "" || root.screenName !== root.streamOutput
+
     // -- the CLI ------------------------------------------------------------
     readonly property string homeDir: Quickshell.env("HOME") || ""
     readonly property var cliCandidates: [
@@ -165,10 +179,6 @@ Panel {
         root.act([on ? "on" : "off"], on ? "Switching to stream-ready..." : "Restoring the desktop...")
     }
 
-    function toggleLayout() {
-        root.setLayout(!root.streaming)
-    }
-
     function setMode(w, h, hz) {
         var note = root.streaming ? "Saved for the next stream: " : "Applying "
         root.act(["mode", w + "x" + h + "@" + hz], note + w + "x" + h + "@" + hz + "...")
@@ -250,7 +260,11 @@ Panel {
         open: root.opened
         focusTarget: keyCatcher
         contentWidth: dropdown.fittedContentWidth(Style.space(340))
-        contentHeight: dropdown.fittedContentHeight(col.implicitHeight, Style.space(420))
+        // Fixed height on purpose. Re-deriving it from col.implicitHeight made the
+        // popup resize right after opening, while the state reply arrived; that
+        // configure path is where Qt Wayland aborted (QWaylandWindow::setGeometry
+        // via raise, SIGSEGV/SI_TKILL).
+        contentHeight: dropdown.fittedContentHeight(Style.space(340), Style.space(340))
 
         PanelKeyCatcher {
             id: keyCatcher
@@ -280,7 +294,6 @@ Panel {
                             ? root.modeWidth + "x" + root.modeHeight + " at " + root.frameRate
                               + " Hz, " + (root.streaming ? "streaming" : "desktop")
                             : (root.cliMissing ? "ostreamy-cli is missing" : "Reading stream state...")
-                        detail: root.statusText
                         foreground: Color.foreground
                         fontFamily: Style.font.family
                         iconComponent: Component {
@@ -316,16 +329,17 @@ Panel {
 
                     PanelSeparator { foreground: Color.foreground }
 
-                    // Enable / Disable / Toggle, one row, like the other panels.
+                    // Start and Stop only: the state is visible above, so a third
+                    // button that flips it added a way to press the wrong one.
                     Row {
                         width: parent.width
                         spacing: Style.space(6)
-                        readonly property real cellWidth: (width - spacing * 2) / 3
+                        readonly property real cellWidth: (width - spacing) / 2
 
                         Button {
                             width: parent.cellWidth
                             bordered: true
-                            text: "Enable"
+                            text: "Start"
                             selected: root.streaming
                             enabled: root.cliPath !== "" && !root.busy
                             tooltipText: "Move workspaces to STREAM and mirror the panel"
@@ -334,19 +348,11 @@ Panel {
                         Button {
                             width: parent.cellWidth
                             bordered: true
-                            text: "Disable"
+                            text: "Stop"
                             selected: !root.streaming && root.loadedReady
                             enabled: root.cliPath !== "" && !root.busy
                             tooltipText: "Restore the desktop layout"
                             onClicked: root.setLayout(false)
-                        }
-                        Button {
-                            width: parent.cellWidth
-                            bordered: true
-                            text: "Toggle"
-                            enabled: root.cliPath !== "" && !root.busy
-                            tooltipText: "Flip between desktop and stream-ready"
-                            onClicked: root.toggleLayout()
                         }
                     }
 
@@ -374,8 +380,10 @@ Panel {
                                     && root.modeWidth === modelData.w
                                     && root.modeHeight === modelData.h
                                 enabled: root.cliPath !== "" && !root.busy
-                                text: modelData.label + " · " + modelData.note
-                                tooltipText: "Stream at " + modelData.label
+                                // Numbers only: the note does not fit in half a panel
+                                // and made the label overflow into the next button.
+                                text: modelData.label
+                                tooltipText: modelData.label + ", " + modelData.note
                                 onClicked: root.setMode(modelData.w, modelData.h, root.frameRate)
                             }
                         }
