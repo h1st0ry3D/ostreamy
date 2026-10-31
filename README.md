@@ -58,6 +58,11 @@ with `visible=true` and a width of about 27 px.
 
 - Start and Stop map to `ostreamy on` and `ostreamy off`. The state line above the
   buttons shows which layout is active, so there is no third flipping button.
+- The same two actions are reachable without the panel:
+  `omarchy-shell h1st0ry3d.ostreamy.actions start` and `... stop`.
+- Switching layout reconfigures every bar surface. The panel therefore closes first
+  and the CLI runs 1.2 s later, which avoids the Qt Wayland configure abort that
+  killed the shell (core `6vvm2e2snt`) when the two overlapped.
 - Resolution and frame rate map to `ostreamy mode WxH@HZ`. While a stream runs, the
   CLI saves the value and applies it to the next session, because changing the
   mode under a live encoder stalls the video. The panel reports that instead of

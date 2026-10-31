@@ -199,7 +199,7 @@ Panel {
 
     Timer {
         id: deferTimer
-        interval: 350
+        interval: 1200
         repeat: false
         onTriggered: root.runPendingRequest()
     }
@@ -272,6 +272,18 @@ Panel {
     }
 
     Component.onCompleted: root.probe()
+
+    /*
+     * Actions without the panel, for scripting and for testing the same code path
+     * the buttons use: omarchy-shell h1st0ry3d.ostreamy.actions start
+     * Only the physical bar copy registers it, like the base IPC target.
+     */
+    IpcHandler {
+        enabled: root.manageIpc
+        target: "h1st0ry3d.ostreamy.actions"
+        function start(): void { root.setLayout(true) }
+        function stop(): void { root.setLayout(false) }
+    }
 
     // -- bar icon -----------------------------------------------------------
     BarIconButton {
