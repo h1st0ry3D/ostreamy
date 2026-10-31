@@ -10,7 +10,7 @@ bar icon (two frames) -> panel
   Ostreamy        [Edit]
   1920x1200 at 60 Hz, desktop
   ------------------------------
-  [ Enable ] [ Disable ] [ Toggle ]
+  [ Start ] [ Stop ]
   Resolution
   [ 1280x800 · Deck native ] [ 1920x1200 · 16:10 desktop ]
   Frame rate
@@ -56,8 +56,8 @@ with `visible=true` and a width of about 27 px.
 
 ## Behaviour worth knowing
 
-- Enable and Disable map to `ostreamy on` and `ostreamy off`. Toggle picks the
-  opposite of the current state.
+- Start and Stop map to `ostreamy on` and `ostreamy off`. The state line above the
+  buttons shows which layout is active, so there is no third flipping button.
 - Resolution and frame rate map to `ostreamy mode WxH@HZ`. While a stream runs, the
   CLI saves the value and applies it to the next session, because changing the
   mode under a live encoder stalls the video. The panel reports that instead of

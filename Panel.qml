@@ -175,13 +175,43 @@ Panel {
         actionTimeout.restart()
     }
 
+    /*
+     * The panel closes before the layout changes and the CLI runs a moment later.
+     * Switching mirrors makes Hyprland reconfigure every bar surface, including
+     * the one the popup is attached to. When that configure arrived while the
+     * popup was still being torn down, Qt Wayland aborted the whole shell
+     * (QWaylandWindow::setGeometry, core 6vvm2e2snt). Closing first, then waiting,
+     * keeps the reconfigure away from an open popup.
+     */
+    property var pendingRequest: null
+
+    function deferAction(args, status) {
+        root.pendingRequest = { args: args, status: status }
+        root.close()
+        deferTimer.restart()
+    }
+
+    function runPendingRequest() {
+        var request = root.pendingRequest
+        root.pendingRequest = null
+        if (request) root.act(request.args, request.status)
+    }
+
+    Timer {
+        id: deferTimer
+        interval: 350
+        repeat: false
+        onTriggered: root.runPendingRequest()
+    }
+
     function setLayout(on) {
-        root.act([on ? "on" : "off"], on ? "Switching to stream-ready..." : "Restoring the desktop...")
+        root.deferAction([on ? "on" : "off"],
+            on ? "Switching to stream-ready..." : "Restoring the desktop...")
     }
 
     function setMode(w, h, hz) {
         var note = root.streaming ? "Saved for the next stream: " : "Applying "
-        root.act(["mode", w + "x" + h + "@" + hz], note + w + "x" + h + "@" + hz + "...")
+        root.deferAction(["mode", w + "x" + h + "@" + hz], note + w + "x" + h + "@" + hz + "...")
     }
 
     function editConfig() {
@@ -210,8 +240,15 @@ Panel {
                 return
             }
             root.statusText = ""
-            root.refresh()
+            refreshTimer.restart()
         }
+    }
+
+    Timer {
+        id: refreshTimer
+        interval: 400
+        repeat: false
+        onTriggered: root.refresh()
     }
 
     Timer {
