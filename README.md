@@ -5,6 +5,8 @@ the Sunshine stream target switcher. The panel does not read the config or talk 
 Hyprland. It calls `ostreamy state` for JSON and `ostreamy on`, `off`, `mode` and
 `edit` for changes, so the CLI stays the only place that knows the layout rules.
 
+![the panel](preview.png)
+
 ```
 bar icon (two frames) -> panel
   Ostreamy        [Edit]
