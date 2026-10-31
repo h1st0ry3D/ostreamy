@@ -1,4 +1,4 @@
-# Ostreamy (Omarchy shell plugin)
+# Ostreamy
 
 Bar widget and panel for [ostreamy-cli](https://github.com/h1st0ry3d/ostreamy-cli),
 the Sunshine stream target switcher. The panel does not read the config or talk to
