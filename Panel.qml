@@ -25,20 +25,6 @@ Panel {
     implicitWidth: button.implicitWidth
     implicitHeight: button.implicitHeight
 
-    // A bar exists per monitor, so this file is instantiated once per screen,
-    // including the off-screen STREAM output. Only the physical screen may own the
-    // IPC target, otherwise `omarchy-shell shell toggle` reaches the invisible copy
-    // and the panel opens where nobody can see it.
-    // QsWindow is the attached property that knows which surface this copy lives
-    // on; the bar object itself is shared and carries no screen.
-    readonly property string screenName: {
-        var win = root.QsWindow ? root.QsWindow.window : null
-        return win && win.screen ? String(win.screen.name || "") : ""
-    }
-    readonly property string streamOutput: root.loadedReady && root.loaded && root.loaded.output
-        ? String(root.loaded.output) : "STREAM"
-    manageIpc: root.screenName === "" || root.screenName !== root.streamOutput
-
     // -- the CLI ------------------------------------------------------------
     readonly property string homeDir: Quickshell.env("HOME") || ""
     readonly property var cliCandidates: [
@@ -276,13 +262,19 @@ Panel {
     /*
      * Actions without the panel, for scripting and for testing the same code path
      * the buttons use: omarchy-shell h1st0ry3d.ostreamy.actions start
-     * Only the physical bar copy registers it, like the base IPC target.
      */
     IpcHandler {
-        enabled: root.manageIpc
         target: "h1st0ry3d.ostreamy.actions"
-        function start(): void { root.setLayout(true) }
-        function stop(): void { root.setLayout(false) }
+
+        // The IPC call reaches one arbitrary bar copy, which may not be the one
+        // with the open panel. Ask the shell for the focused monitor's copy too, so
+        // the visible popup is gone before the layout reconfigures the bars.
+        function closeEverywhere(): void {
+            Quickshell.execDetached(["omarchy-shell", "shell", "hide", root.moduleName])
+        }
+
+        function start(): void { closeEverywhere(); root.setLayout(true) }
+        function stop(): void { closeEverywhere(); root.setLayout(false) }
     }
 
     // -- bar icon -----------------------------------------------------------

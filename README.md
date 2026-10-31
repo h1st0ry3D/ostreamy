@@ -62,7 +62,9 @@ with `visible=true` and a width of about 27 px.
   `omarchy-shell h1st0ry3d.ostreamy.actions start` and `... stop`.
 - Switching layout reconfigures every bar surface. The panel therefore closes first
   and the CLI runs 1.2 s later, which avoids the Qt Wayland configure abort that
-  killed the shell (core `6vvm2e2snt`) when the two overlapped.
+  killed the shell (core `6vvm2e2snt`) when the two overlapped. The scripted actions
+  also hide the focused panel through the shell, since an IPC call can land on a
+  different bar copy than the one with the open popup.
 - Resolution and frame rate map to `ostreamy mode WxH@HZ`. While a stream runs, the
   CLI saves the value and applies it to the next session, because changing the
   mode under a live encoder stalls the video. The panel reports that instead of
