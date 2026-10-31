@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "h1st0ry3d.ostreamy",
+  "name": "Ostreamy",
+  "version": "1.0.0",
+  "author": "h1st0ry3d",
+  "license": "MIT",
+  "description": "Switch the Sunshine stream target between desktop and stream-ready, and pick its resolution and frame rate. Requires ostreamy-cli.",
+  "kinds": [
+    "bar-widget",
+    "panel"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml",
+    "panel": "Panel.qml"
+  }
+}
