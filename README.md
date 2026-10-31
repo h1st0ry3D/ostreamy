@@ -40,6 +40,20 @@ plugin:
 The panel is reached from the bar icon. `Edit` opens `~/.config/ostreamy/config.sh`
 through `ostreamy edit` (xdg-open, then a terminal editor as fallback).
 
+After adding the plugin, restart the shell from a terminal that belongs to the
+running session, or refresh the signature first:
+
+```bash
+export HYPRLAND_INSTANCE_SIGNATURE=$(hyprctl instances -j | jq -r 'sort_by(.time)|last|.instance')
+omarchy restart shell
+```
+
+A stale signature in a long-lived terminal makes the restart kill the shell without
+relaunching it: the script calls `hyprctl dispatch` and that fails silently. The bar
+then has no widget because it has no shell. Check with
+`omarchy-shell shell debugBarGeometry` after the restart; the widget should appear
+with `visible=true` and a width of about 27 px.
+
 ## Behaviour worth knowing
 
 - Enable and Disable map to `ostreamy on` and `ostreamy off`. Toggle picks the
